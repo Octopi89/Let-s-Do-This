@@ -11,10 +11,18 @@ import UIKit
 class ToDoListController: UITableViewController {
     
     var itemArray = ["Find Pizza", "Eat Pizza", "Go to Gym"]
+    
+    //Mark - set up user defaults
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        if let items = defaults.array(forKey: "ToDoListArray") as? [String] {
+            itemArray = items
+        }
+        
+        
     }
     
     //MARK - Tableview Datasource Methods
@@ -36,7 +44,6 @@ class ToDoListController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        
         // making the gray selector go away
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -54,12 +61,16 @@ class ToDoListController: UITableViewController {
         //set up variable to catch the String added
         var newItem = UITextField()
         
+        
         //want to get a ui alert to pop up and a textfield in it so that a person can add items
         let alert = UIAlertController(title: "Add To Do Item", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once user clicks the add item button on our UI alert
             self.itemArray.append(newItem.text!)
+            
+            //save array to user defaults
+            self.defaults.set(self.itemArray, forKey: "ToDoListArray")
             
             //need to reload the data for the new item added
             self.tableView.reloadData()
