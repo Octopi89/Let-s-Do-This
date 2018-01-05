@@ -10,7 +10,7 @@ import UIKit
 
 class ToDoListController: UITableViewController {
     
-    var itemArray = ["Find Pizza", "Eat Pizza", "Go to Gym"]
+    var itemArray = [Item]()
     
     //Mark - set up user defaults
     let defaults = UserDefaults.standard
@@ -18,7 +18,7 @@ class ToDoListController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        if let items = defaults.array(forKey: "ToDoListArray") as? [String] {
+        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
             itemArray = items
         }
         
@@ -35,7 +35,13 @@ class ToDoListController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        cell.textLabel?.text = itemArray[indexPath.row]
+        let item = itemArray[indexPath.row]
+        
+        cell.textLabel?.text = item.title
+        
+        cell.accessoryType = item.done ? .checkmark : .none
+        
+        
         
         return cell
     }
@@ -48,18 +54,17 @@ class ToDoListController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         
         //get check mark to come up and go away by using an accessory
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        tableView.reloadData()
     }
     
     //MARK - Add new Items
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
         //set up variable to catch the String added
-        var newItem = UITextField()
+        var textField = UITextField()
         
         
         //want to get a ui alert to pop up and a textfield in it so that a person can add items
@@ -67,7 +72,10 @@ class ToDoListController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once user clicks the add item button on our UI alert
-            self.itemArray.append(newItem.text!)
+            
+            let newItem = Item()
+            newItem.title = textField.text!
+            self.itemArray.append(newItem)
             
             //save array to user defaults
             self.defaults.set(self.itemArray, forKey: "ToDoListArray")
@@ -79,7 +87,7 @@ class ToDoListController: UITableViewController {
         alert.addTextField { (alertTextField) in
             //set up alert textfield
             alertTextField.placeholder = "Create new item"
-            newItem = alertTextField
+            textField = alertTextField
         }
         
         alert.addAction(action)
@@ -90,9 +98,5 @@ class ToDoListController: UITableViewController {
         
         
     }
-    
-    
-    
-
 
 }
