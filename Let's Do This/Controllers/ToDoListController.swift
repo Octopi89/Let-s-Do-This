@@ -12,16 +12,13 @@ class ToDoListController: UITableViewController {
     
     var itemArray = [Item]()
     
-    //Mark - set up user defaults
-    let defaults = UserDefaults.standard
+     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
-            itemArray = items
-        }
         
+        loadItems()
         
     }
     
@@ -40,6 +37,8 @@ class ToDoListController: UITableViewController {
         cell.textLabel?.text = item.title
         
         cell.accessoryType = item.done ? .checkmark : .none
+        
+        saveItems()
         
         
         
@@ -78,7 +77,7 @@ class ToDoListController: UITableViewController {
             self.itemArray.append(newItem)
             
             //save array to user defaults
-            self.defaults.set(self.itemArray, forKey: "ToDoListArray")
+            self.saveItems()
             
             //need to reload the data for the new item added
             self.tableView.reloadData()
@@ -94,9 +93,29 @@ class ToDoListController: UITableViewController {
         
         present(alert, animated: true, completion: nil)
         
-        
-        
-        
     }
+    
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+        }
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error \(error)")
+            }
+        }
+    }
+    
 
 }
